@@ -1,9 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-#  from sklearn.model_selection import train_test_split
-#  from sklearn.linear_model import LogisticRegression
-#  from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 
 df = pd.read_csv('Sleep_health_and_lifestyle_dataset.csv')
 LE = LabelEncoder()
@@ -38,3 +37,14 @@ df['Daily Steps'] = SS.fit_transform(df[['Daily Steps']])
 # Extracting X data and Y data
 X_data = df[df.columns.drop(['Sleep Disorder'])].values
 Y_data = df['Sleep Disorder'].values
+
+# Split the data into 80% training data and 20% test data
+X_train_temp, X_test, y_train_temp, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=0)
+
+# Only apply SMOTE to the training data
+sm = SMOTE(random_state=0)
+X_train_res, y_train = sm.fit_resample(X_train_temp, y_train_temp.ravel())
+
+sc = StandardScaler()
+X_train_scaled = sc.fit_transform(X_train_res)
+X_test_scaled = sc.transform(X_test)
