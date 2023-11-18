@@ -34,6 +34,9 @@ df['Blood Pressure'] = SS.fit_transform(df[['Blood Pressure']])
 df['Heart Rate'] = SS.fit_transform(df[['Heart Rate']])
 df['Daily Steps'] = SS.fit_transform(df[['Daily Steps']])
 
+# Remove the Person ID column
+df.drop(['Person ID'], axis=1, inplace=True)
+
 # Extracting X data and Y data
 X_data = df[df.columns.drop(['Sleep Disorder'])].values
 Y_data = df['Sleep Disorder'].values
