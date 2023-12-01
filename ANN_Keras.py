@@ -55,10 +55,21 @@ sc = StandardScaler()
 X_train_scaled = sc.fit_transform(X_train_res)
 X_test_scaled = sc.transform(X_test)
 
+X_train_temp, X_test, y_train_temp, y_test_dev = train_test_split(X_data, Y_data, test_size=0.15, random_state=0)
+sm = SMOTE(random_state=0)
+X_train_res, y_train_res = sm.fit_resample(X_train_temp, y_train_temp.ravel())
+X_train, X_valid, y_train_dev, y_valid_dev = train_test_split(X_train_res, y_train_res, test_size=(.15 / .85),
+                                                              random_state=0)
+sc = StandardScaler()
+X_train_scaled_dev = sc.fit_transform(X_train)
+X_valid_scaled_dev = sc.transform(X_valid)
+X_test_scaled_dev = sc.transform(X_test)
+
 model = Sequential()
-model.add(Dense(64, activation='relu', input_shape=(X_train_scaled.shape[1],)))
+model.add(Dense(64, activation='relu', input_shape=(X_train_scaled_dev.shape[1],)))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-model.fit(X_train_scaled, y_train, epochs=20, batch_size=32, validation_data=(X_test_scaled, y_test))
+history = model.fit(X_train_scaled_dev, y_train_dev, epochs=20, batch_size=32, validation_data=(X_valid_scaled_dev, y_valid_dev))
+history_dict = history.history
