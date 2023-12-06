@@ -78,38 +78,45 @@ X_train_scaled_dev = sc.fit_transform(X_train)
 X_valid_scaled_dev = sc.transform(X_valid)
 X_test_scaled_dev = sc.transform(X_test)
 
-logreg_default = LogisticRegression(random_state=0)
-logreg_default.fit(X_train_scaled_dev, y_train_dev)
-y_pred_valid_default = logreg_default.predict(X_valid_scaled_dev)
 
-accuracy_default = accuracy_score(y_valid_dev, y_pred_valid_default)
-print(f'Accuracy score of logistic regression using default hyperparameters on the validation set: {accuracy_default}')
+def logistic_regression(x_train, y_train1, x_valid, y_valid, x_test, y_test1):
+    logreg_default = LogisticRegression(random_state=0)
+    logreg_default.fit(x_train, y_train1)
+    y_pred_valid_default = logreg_default.predict(x_valid)
 
-c_s = [0.0001, 0.001, 0.01, 0.1, 10, 100, 1000, 10000]
-c_improve_accuracy = 0
-c_improve = 0
+    accuracy_default = accuracy_score(y_valid, y_pred_valid_default)
+    print(f'Accuracy score of logistic regression using default hyperparameters on the validation set: {accuracy_default}')
 
-for c in c_s:
-    logreg_temp = LogisticRegression(C=c)
-    logreg_temp.fit(X_train_scaled_dev, y_train_dev)
-    y_pred_temp = logreg_temp.predict(X_valid_scaled_dev)
-    accuracy_temp = accuracy_score(y_valid_dev, y_pred_temp)
-    if accuracy_temp > c_improve_accuracy:
-        c_improve_accuracy = accuracy_temp
-        c_improve = c
+    c_s = [0.0001, 0.001, 0.01, 0.1, 10, 100, 1000, 10000]
+    c_improve_accuracy = 0
+    c_improve = 0
 
-logreg_improve = LogisticRegression(C=c_improve, max_iter=500)
-logreg_improve.fit(X_train_scaled_dev, y_train_dev)
-y_pred_valid_improve = logreg_improve.predict(X_valid_scaled_dev)
-accuracy_improve = accuracy_score(y_valid_dev, y_pred_valid_improve)
-print(f'Accuracy score of logistic regression on the validation set with C = {c_improve} is {accuracy_improve}')
+    for c in c_s:
+        logreg_temp = LogisticRegression(C=c)
+        logreg_temp.fit(x_train, y_train1)
+        y_pred_temp = logreg_temp.predict(x_valid)
+        accuracy_temp = accuracy_score(y_valid, y_pred_temp)
+        if accuracy_temp > c_improve_accuracy:
+            c_improve_accuracy = accuracy_temp
+            c_improve = c
 
-X_train_combined = np.concatenate((X_train_scaled_dev, X_valid_scaled_dev))
-y_train_combined = np.concatenate((y_train_dev, y_valid_dev))
-logreg = LogisticRegression(C=c_improve, max_iter=500)
-logreg.fit(X_train_combined, y_train_combined)
-y_pred = logreg.predict(X_test_scaled_dev)
-accuracy = accuracy_score(y_test_dev, y_pred)
-print(f'Accuracy score of logistic regression on the test set with C = {c_improve} is {accuracy}')
+    logreg_improve = LogisticRegression(C=c_improve, max_iter=500)
+    logreg_improve.fit(x_train, y_train1)
+    y_pred_valid_improve = logreg_improve.predict(x_valid)
+    accuracy_improve = accuracy_score(y_valid, y_pred_valid_improve)
+    print(f'Accuracy score of logistic regression on the validation set with C = {c_improve} is {accuracy_improve}')
+
+    x_train_combined = np.concatenate((x_train, x_valid))
+    y_train_combined = np.concatenate((y_train1, y_valid))
+    logreg = LogisticRegression(C=c_improve, max_iter=500)
+    logreg.fit(x_train_combined, y_train_combined)
+    y_pred = logreg.predict(x_test)
+    accuracy = accuracy_score(y_test1, y_pred)
+    print(f'Accuracy score of logistic regression on the test set with C = {c_improve} is {accuracy}')
 
 # Note for the report on why the accuracy is lower --> see kayla's personal testing file
+
+
+# Test for calling the function
+if __name__ == '__main__':
+    logistic_regression(X_train_scaled_dev, y_train_dev, X_valid_scaled_dev, y_valid_dev, X_test_scaled_dev, y_test_dev)
