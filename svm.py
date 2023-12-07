@@ -66,6 +66,49 @@ X_train_scaled_dev = sc.fit_transform(X_train)
 X_valid_scaled_dev = sc.transform(X_valid)
 X_test_scaled_dev = sc.transform(X_test)
 
+
+
+def train_test_SVM(X_train, y_train, X_valid, y_valid, X_test, y_test):
+    def get_best_c(X_train_scaled_dev, y_train_dev, X_valid_scaled_dev, y_valid_dev):
+        c_values = [0.0001, 0.001, 0.01, 0.1, 10, 100, 1000, 10000]
+        best_accuracy = 0
+        best_c = 0
+
+        for c in c_values:
+            svm_temp = SVC(C=c, kernel='rbf', random_state=0)
+            svm_temp.fit(X_train_scaled_dev, y_train_dev)
+            y_pred_temp = svm_temp.predict(X_valid_scaled_dev)
+            accuracy_temp = accuracy_score(y_valid_dev, y_pred_temp)
+            if accuracy_temp > best_accuracy:
+                best_accuracy = accuracy_temp
+                best_c = c
+
+        return best_c
+
+    svm_default = SVC(kernel='rbf', random_state=0)
+    svm_default.fit(X_train, y_train)
+    y_pred_valid_default = svm_default.predict(X_valid)
+    accuracy_default = accuracy_score(y_valid, y_pred_valid_default)
+    print(f'Accuracy score of SVM using default hyperparameters on the validation set: {accuracy_default}')
+
+    best_c = get_best_c(X_train, y_train, X_valid, y_valid)
+
+    svm_final = SVC(C=best_c, kernel='rbf', random_state=0)
+    svm_final.fit(np.concatenate((X_train, X_valid)), np.concatenate((y_train, y_valid)))
+    y_pred = svm_final.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f'Accuracy score of SVM on the test set with C = {best_c} is {accuracy}')
+
+# Usage 
+train_test_SVM(X_train_scaled_dev, y_train_dev, X_valid_scaled_dev, y_valid_dev, X_test_scaled_dev, y_test_dev)
+
+
+
+
+"""
+
+
+
 # SVM model
 svm_default = SVC(kernel='rbf', random_state=0)
 svm_default.fit(X_train_scaled_dev, y_train_dev)
@@ -102,3 +145,6 @@ svm_final.fit(X_train_combined, y_train_combined)
 y_pred = svm_final.predict(X_test_scaled_dev)
 accuracy = accuracy_score(y_test_dev, y_pred)
 print(f'Accuracy score of SVM on the test set with C = {best_c} is {accuracy}')
+
+
+"""
