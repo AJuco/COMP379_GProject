@@ -41,13 +41,17 @@ df.drop(['Person ID'], axis=1, inplace=True)
 X_data = df[df.columns.drop(['Sleep Disorder'])].values
 Y_data = df['Sleep Disorder'].values
 
-# Split the data into 80% training data and 20% test data
-X_train_temp, X_test, y_train_temp, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=0)
+# Split the data into 85% training data and 15% test data
+X_train_temp, X_test, y_train_temp, y_test_dev = train_test_split(X_data, Y_data, test_size=0.15, random_state=0)
 
 # Only apply SMOTE to the training data
 sm = SMOTE(random_state=0)
-X_train_res, y_train = sm.fit_resample(X_train_temp, y_train_temp.ravel())
+X_train_res, y_train_res = sm.fit_resample(X_train_temp, y_train_temp.ravel())
 
+# Split the training data so 15% of the total amount of data is the validation data and the rest is for training
+X_train, X_valid, y_train_dev, y_valid_dev = train_test_split(X_train_res, y_train_res, test_size=(.15 / .85),
+                                                              random_state=0)
 sc = StandardScaler()
-X_train_scaled = sc.fit_transform(X_train_res)
-X_test_scaled = sc.transform(X_test)
+X_train_scaled_dev = sc.fit_transform(X_train)
+X_valid_scaled_dev = sc.transform(X_valid)
+X_test_scaled_dev = sc.transform(X_test)
