@@ -67,24 +67,56 @@ X_test_scaled_dev = sc.transform(X_test)
 
 
 # Random forest
-rf_model_default = RandomForestClassifier(n_estimators=100, max_features='sqrt', random_state=0)
-rf_model_default.fit(X_train_scaled_dev, y_train_dev)
-y_pred_default = rf_model_default.predict(X_valid_scaled_dev)
+rf_model_initial = RandomForestClassifier(n_estimators=100, max_features='sqrt', min_samples_split=5,
+                                          random_state=0)
+rf_model_initial.fit(X_train_scaled_dev, y_train_dev)
+y_pred_initial = rf_model_initial.predict(X_test_scaled_dev)
 
-# Default performance evaluation
-print(f'Classification report of default RF:\n{classification_report(y_valid_dev, y_pred_default)}')
+# Initial performance evaluation
+print('Accuracy score of default RF: {0:0.4}'.format(accuracy_score(y_test_dev, y_pred_initial)))
+
+# Updating forest
+rf_model_temp = RandomForestClassifier(n_estimators=100, max_features='sqrt', min_samples_split=5,
+                                       random_state=0)
+rf_model_temp.fit(X_train_scaled_dev, y_train_dev)
+y_pred_temp = rf_model_temp.predict(X_valid_scaled_dev)
+print('Accuracy score of temp RF: {0:0.4}'.format(accuracy_score(y_valid_dev, y_pred_temp)))
 
 # Tuning hyperparameters
-param_grid = {'n_estimators': [25, 50, 75, 100, 125, 150],
+param_grid = {'n_estimators': [15, 25, 50, 75, 100, 125, 150],
               'max_features': ['sqrt', 'log2'],
-              'max_depth': [3, 5, 7, 9]}
+              'max_depth': [3, 5, 7, 9],
+              'min_samples_split': [10, 30, 50, 75]}
 
-rand_search = RandomizedSearchCV(rf_model_default, param_distributions=param_grid, cv=4, random_state=0)
+rand_search = RandomizedSearchCV(rf_model_temp, param_distributions=param_grid, cv=10, random_state=0)
 rand_search.fit(X_train_scaled_dev, y_train_dev)
 print(f'Best model:\n {rand_search.best_estimator_}')
 
-# Updating forest
-rf_model_final = RandomForestClassifier(n_estimators=50, max_depth=9, max_features='sqrt', random_state=0)
+# Determining feature importance
+importances = rf_model_initial.feature_importances_
+feature_names = df.columns.drop(['Sleep Disorder'])
+
+# Creating a DataFrame to store feature names and their importance scores
+feature_importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
+
+# Sorting the DataFrame by importance in descending order
+feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
+
+# Feature importance
+top_n = 11
+top_features = feature_importance_df.head(top_n)
+print(top_features)
+
+# Final model
+rf_model_final = RandomForestClassifier(n_estimators=50, max_depth=9, max_features='log2', min_samples_split=10,
+                                        random_state=0)
 rf_model_final.fit(X_train_scaled_dev, y_train_dev)
-y_pred_final = rf_model_final.predict(X_valid_scaled_dev)
-print(f'Classification report of final RF:\n {classification_report(y_valid_dev, y_pred_final)}')
+y_pred_final = rf_model_final.predict(X_test_scaled_dev)
+print('Accuracy score of final RF: {0:0.4}'.format(accuracy_score(y_test_dev, y_pred_final)))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test_dev, y_pred_final)
+print('Confusion matrix\n\n', cm)
+
+# Classification report
+print(f'Classification report of default RF:\n{classification_report(y_test_dev, y_pred_final)}')
