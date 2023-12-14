@@ -99,7 +99,6 @@ def train_test_SVM(X_train, y_train, X_valid, y_valid, X_test, y_test):
     accuracy = accuracy_score(y_test, y_pred)
     print(f'Accuracy score of SVM on the test set with C = {best_c} is {accuracy}')
 
-# Usage 
 train_test_SVM(X_train_scaled_dev, y_train_dev, X_valid_scaled_dev, y_valid_dev, X_test_scaled_dev, y_test_dev)
 
 
