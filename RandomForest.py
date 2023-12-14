@@ -68,19 +68,10 @@ X_test_scaled_dev = sc.transform(X_test)
 
 # Random forest
 rf_model_initial = RandomForestClassifier(n_estimators=100, max_features='sqrt', min_samples_split=5,
-                                          random_state=0)
-rf_model_initial.fit(X_train_scaled_dev, y_train_dev)
-y_pred_initial = rf_model_initial.predict(X_test_scaled_dev)
-
-# Initial performance evaluation
-print('Accuracy score of default RF: {0:0.4}'.format(accuracy_score(y_test_dev, y_pred_initial)))
-
-# Updating forest
-rf_model_temp = RandomForestClassifier(n_estimators=100, max_features='sqrt', min_samples_split=5,
                                        random_state=0)
-rf_model_temp.fit(X_train_scaled_dev, y_train_dev)
-y_pred_temp = rf_model_temp.predict(X_valid_scaled_dev)
-print('Accuracy score of temp RF: {0:0.4}'.format(accuracy_score(y_valid_dev, y_pred_temp)))
+rf_model_initial.fit(X_train_scaled_dev, y_train_dev)
+y_pred_initial = rf_model_initial.predict(X_valid_scaled_dev)
+print('Accuracy score of initial RF: {0:0.4}'.format(accuracy_score(y_valid_dev, y_pred_initial)))
 
 # Tuning hyperparameters
 param_grid = {'n_estimators': [15, 25, 50, 75, 100, 125, 150],
@@ -88,7 +79,7 @@ param_grid = {'n_estimators': [15, 25, 50, 75, 100, 125, 150],
               'max_depth': [3, 5, 7, 9],
               'min_samples_split': [10, 30, 50, 75]}
 
-rand_search = RandomizedSearchCV(rf_model_temp, param_distributions=param_grid, cv=10, random_state=0)
+rand_search = RandomizedSearchCV(rf_model_initial, param_distributions=param_grid, cv=10, random_state=0)
 rand_search.fit(X_train_scaled_dev, y_train_dev)
 print(f'Best model:\n {rand_search.best_estimator_}')
 
